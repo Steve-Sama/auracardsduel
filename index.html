@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+
+  <!-- SEO CORE -->
+  <title>Aura Cards Duel – Play Meme Card Battles Online</title>
+  <meta name="description" content="Play Aura Cards Duel – a fun online meme card game where you battle friends using aura power. Compete, win, and climb the leaderboard."/>
+  <meta name="keywords" content="meme game, aura game, online card game, multiplayer browser game, funny games online"/>
+  <meta name="author" content="Aura Cards"/>
+
+  <!-- OPEN GRAPH (for sharing) -->
+  <meta property="og:title" content="Aura Cards Duel"/>
+  <meta property="og:description" content="Battle your friends using meme aura cards 🔥"/>
+  <meta property="og:type" content="website"/>
+
+  <!-- STYLING -->
+  <link rel="stylesheet" href="style.css"/>
+
+  <!-- ADSENSE READY -->
+  <!-- Replace later with your AdSense script -->
+  <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> -->
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <h1>Aura Cards Duel 🔥</h1>
+    <p>Battle friends using meme-powered aura cards</p>
+  </header>
+
+  <!-- MAIN -->
+  <main>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+      <h2>Test Your Aura. Beat Your Friends.</h2>
+      <p>Play fast 5-round battles using powerful meme cards like Sigma, NPC, and Main Character energy.</p>
+      <button id="startBtn">Start Playing</button>
+    </section>
+
+    <section class="preview">
+  <h3>🔥 Featured Aura Cards</h3>
+
+  <div class="card-grid">
+
+    <div class="preview-card">
+      <img src="images/sigma.jpg" alt="Sigma Mode Card">
+      <h4>Sigma Mode</h4>
+      <p>⚡ 90</p>
+    </div>
+
+    <div class="preview-card">
+      <img src="images/npc.jpg" alt="NPC Energy Card">
+      <h4>NPC Energy</h4>
+      <p>⚡ 40</p>
+    </div>
+
+    <div class="preview-card">
+      <img src="images/main-character.jpg" alt="Main Character Card">
+      <h4>Main Character</h4>
+      <p>⚡ 85</p>
+    </div>
+
+  </div>
+</section>
+
+    <!-- GAME SECTION -->
+    <section id="game" class="hidden">
+
+      <!-- LOBBY -->
+      <div id="lobby">
+        <h3>Enter Game</h3>
+        <input type="text" id="username" placeholder="Enter username"/>
+        <button id="joinBtn">Join Lobby</button>
+        <p id="status"></p>
+      </div>
+
+      <!-- MATCH -->
+      <div id="match" class="hidden">
+        <h3 id="round">Round 1 / 5</h3>
+
+        <div id="timer">Time: 60</div>
+
+        <div class="cards" id="playerCards"></div>
+
+        <button id="playBtn">Play Card</button>
+
+        <div class="battle">
+          <p id="result"></p>
+        </div>
+
+        <div class="score">
+          <p>Your Score: <span id="playerScore">0</span></p>
+          <p>Opponent: <span id="opponentScore">0</span></p>
+        </div>
+      </div>
+
+      <div class="battle">
+  <p id="result"></p>
+  <button id="restartBtn" class="hidden">Play Again</button>
+</div>
+
+    </section>
+
+    <!-- CONTENT SECTION (SEO + ADSENSE APPROVAL) -->
+    <section class="content">
+      <h2>What is Aura Cards Duel?</h2>
+      <p>
+        Aura Cards Duel is a fast-paced online card game where players battle using meme-based aura cards.
+        Each card represents a personality or internet vibe such as Sigma, NPC, or Main Character energy.
+      </p>
+
+      <h3>How to Play</h3>
+      <ul>
+        <li>Join a lobby and get matched with another player</li>
+        <li>Play one card per round</li>
+        <li>Win rounds by having higher aura points</li>
+        <li>Score points and win the match</li>
+      </ul>
+
+      <h3>Why People Love It</h3>
+      <p>
+        The game blends humor, competition, and meme culture, making it highly engaging and shareable on social media platforms like TikTok and Instagram.
+      </p>
+    </section>
+
+    <!-- AD SPACE -->
+    <section class="ads">
+      <div class="ad-box">Ad Space</div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>© 2026 Aura Cards Duel. All rights reserved.</p>
+  </footer>
+
+  <!-- SCRIPT -->
+  <script src="script.js"></script>
+
+</body>
+</html>
