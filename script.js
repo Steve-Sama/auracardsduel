@@ -37,13 +37,14 @@ let opponentId = null;
 const restartBtn = document.getElementById("restartBtn");
 const resultBox = document.getElementById("result");
 const statusBox = document.getElementById("status");
+const opponentStatusEl = document.getElementById("opponentStatus");
+const faceoffContainer = document.getElementById("faceoff");
 
-// ===== HELPER: GENERATE DECK =====
+// ===== HELPER FUNCTIONS =====
 function generateDeck() {
   return [...allCards].sort(() => 0.5 - Math.random()).slice(0, 5);
 }
 
-// ===== RENDER PLAYER CARDS =====
 function renderCards() {
   const container = document.getElementById("playerCards");
   container.innerHTML = "";
@@ -64,7 +65,6 @@ function renderCards() {
   });
 }
 
-// ===== UPDATE UI =====
 function updateUI() {
   document.getElementById("round").innerText = `Round ${round} / 5`;
   document.getElementById("playerScore").innerText = playerScore;
@@ -72,7 +72,6 @@ function updateUI() {
   renderCards();
 }
 
-// ===== TIMER =====
 function startTimer() {
   clearInterval(timerInterval);
   timeLeft = 60;
@@ -95,12 +94,17 @@ function updateTimerUI() {
   if (timeLeft <= 10) timerEl.classList.add("timer-danger");
 }
 
-// ===== AUTO SELECT CARD IF TIMEOUT =====
 function autoSelectCard() {
   if (playerDeck.length === 0) return;
   selectedIndex = Math.floor(Math.random() * playerDeck.length);
   playCard();
 }
+
+// ===== START BUTTON =====
+document.getElementById("startBtn").onclick = () => {
+  document.querySelector(".hero").style.display = "none";
+  document.getElementById("game").classList.remove("hidden");
+};
 
 // ===== JOIN GAME & MATCHMAKING =====
 document.getElementById("joinBtn").onclick = async () => {
@@ -146,19 +150,18 @@ function startMultiplayer(playerData, opponentData) {
   updateUI();
   startTimer();
   statusBox.innerText = "Match Found!";
-
+  faceoffContainer.innerHTML = "";
   listenForOpponentCard();
 }
 
 // ===== PLAY CARD =====
 document.getElementById("playBtn").onclick = playCard;
-
 function playCard() {
   if (selectedIndex === null) return alert("Select a card!");
+
   clearInterval(timerInterval);
   const card = playerDeck[selectedIndex];
 
-  // Push this round card to Firebase
   database.ref(`matches/round${round}/${playerId}`).set({
     card,
     timestamp: Date.now()
@@ -171,13 +174,24 @@ function playCard() {
 function listenForOpponentCard() {
   database.ref(`matches/round${round}`).on("value", snapshot => {
     const roundData = snapshot.val() || {};
+
+    if (!roundData[opponentId]) {
+      opponentStatusEl.innerText = "Opponent has not played yet";
+      opponentStatusEl.classList.add("tension");
+    } else {
+      opponentStatusEl.innerText = "Opponent has played!";
+      opponentStatusEl.classList.remove("tension");
+    }
+
+    // Resolve only when both players have played
     if (roundData[playerId] && roundData[opponentId]) {
+      opponentStatusEl.innerText = "Both cards dropped!";
       resolveRound(roundData[playerId].card, roundData[opponentId].card);
     }
   });
 }
 
-// ===== RESOLVE ROUND VISUALLY =====
+// ===== RESOLVE ROUND =====
 function resolveRound(playerCard, opponentCard) {
   let resultText = "";
 
@@ -198,22 +212,22 @@ function resolveRound(playerCard, opponentCard) {
   }
 
   // SHOW CARDS FACE TO FACE
+  faceoffContainer.innerHTML = "";
   const playerCardEl = document.createElement("div");
   playerCardEl.className = "card faceoff";
   playerCardEl.innerHTML = `<img src="${playerCard.img}" alt="${playerCard.name}"><p>${playerCard.name}</p>`;
   const opponentCardEl = document.createElement("div");
   opponentCardEl.className = "card faceoff";
   opponentCardEl.innerHTML = `<img src="${opponentCard.img}" alt="${opponentCard.name}"><p>${opponentCard.name}</p>`;
-
-  const faceoffContainer = document.getElementById("faceoff");
-  faceoffContainer.innerHTML = "";
   faceoffContainer.appendChild(playerCardEl);
   faceoffContainer.appendChild(opponentCardEl);
 
-  round++;
+  // Remove used cards
   playerDeck.splice(selectedIndex, 1);
   selectedIndex = null;
   opponentDeck.shift();
+
+  round++;
   updateUI();
   cleanupRound(round - 1);
 
@@ -233,7 +247,6 @@ function endGame() {
   if (playerScore > opponentScore) finalText = "🏆 YOU ARE HIM. MAIN CHARACTER ENERGY.";
   else if (playerScore < opponentScore) finalText = "💀 NPC ENERGY DETECTED.";
   else finalText = "⚖️ PERFECTLY BALANCED.";
-
   resultBox.innerText = finalText;
   restartBtn.classList.remove("hidden");
 }
@@ -249,33 +262,7 @@ restartBtn.onclick = () => {
   playerScore = 0;
   opponentScore = 0;
   selectedIndex = null;
+  faceoffContainer.innerHTML = "";
   updateUI();
   startTimer();
 };
-
-const opponentStatusEl = document.getElementById("opponentStatus");
-
-function listenForOpponentCard() {
-  database.ref(`matches/round${round}`).on("value", snapshot => {
-    const roundData = snapshot.val() || {};
-
-    // Check if opponent has dropped
-    if (roundData[opponentId]) {
-      opponentStatusEl.innerText = "Opponent has played their card!";
-    } else {
-      opponentStatusEl.innerText = "Opponent has not played yet";
-    }
-
-    // Resolve round when both players have dropped
-    if (roundData[playerId] && roundData[opponentId]) {
-      opponentStatusEl.innerText = "Both cards dropped!";
-      resolveRound(roundData[playerId].card, roundData[opponentId].card);
-    }
-  });
-}
-
-if (!roundData[opponentId]) {
-  opponentStatusEl.classList.add("tension");
-} else {
-  opponentStatusEl.classList.remove("tension");
-}
