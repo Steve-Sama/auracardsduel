@@ -156,6 +156,24 @@ input {
   box-shadow: 0 0 10px #22c55e;
 }
 
+
+#opponentStatus {
+  font-weight: bold;
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
+}
+
+#opponentStatus.tension {
+  color: #ff0000;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
 /* TIMER COLORS */
 #timer {
   font-size: 1.8rem;
