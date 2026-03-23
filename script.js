@@ -21,7 +21,7 @@ const allCards = [
   { name: "Academic Weapon", power: 88, img: "images/academic.jpg" }
 ];
 
-// ===== GAME STATE =====
+// ===== STATE =====
 let playerDeck = [];
 let opponentDeck = [];
 let selectedIndex = null;
@@ -40,7 +40,7 @@ const statusBox = document.getElementById("status");
 const opponentStatusEl = document.getElementById("opponentStatus");
 const faceoffContainer = document.getElementById("faceoff");
 
-// ===== HELPER FUNCTIONS =====
+// ===== HELPERS =====
 function generateDeck() {
   return [...allCards].sort(() => 0.5 - Math.random()).slice(0, 5);
 }
@@ -51,11 +51,7 @@ function renderCards() {
   playerDeck.forEach((card, index) => {
     const div = document.createElement("div");
     div.className = "card";
-    div.innerHTML = `
-      <img src="${card.img}" alt="${card.name}">
-      <h4>${card.name}</h4>
-      <p>⚡ ${card.power}</p>
-    `;
+    div.innerHTML = `<img src="${card.img}" alt="${card.name}"><h4>${card.name}</h4><p>⚡ ${card.power}</p>`;
     div.onclick = () => {
       selectedIndex = index;
       document.querySelectorAll(".card").forEach(c => c.classList.remove("selected"));
@@ -72,6 +68,7 @@ function updateUI() {
   renderCards();
 }
 
+// ===== TIMER =====
 function startTimer() {
   clearInterval(timerInterval);
   timeLeft = 60;
@@ -123,7 +120,7 @@ document.getElementById("joinBtn").onclick = async () => {
     score: 0
   });
 
-  // Listen for opponent in lobby
+  // Lobby listener
   database.ref("lobby").on("value", snapshot => {
     const players = snapshot.val() || {};
     const ids = Object.keys(players);
@@ -158,15 +155,13 @@ function startMultiplayer(playerData, opponentData) {
 document.getElementById("playBtn").onclick = playCard;
 function playCard() {
   if (selectedIndex === null) return alert("Select a card!");
-
   clearInterval(timerInterval);
   const card = playerDeck[selectedIndex];
-
+  // Save card to Firebase under current round
   database.ref(`matches/round${round}/${playerId}`).set({
     card,
     timestamp: Date.now()
   });
-
   statusBox.innerText = "Waiting for opponent...";
 }
 
@@ -174,7 +169,6 @@ function playCard() {
 function listenForOpponentCard() {
   database.ref(`matches/round${round}`).on("value", snapshot => {
     const roundData = snapshot.val() || {};
-
     if (!roundData[opponentId]) {
       opponentStatusEl.innerText = "Opponent has not played yet";
       opponentStatusEl.classList.add("tension");
@@ -182,10 +176,8 @@ function listenForOpponentCard() {
       opponentStatusEl.innerText = "Opponent has played!";
       opponentStatusEl.classList.remove("tension");
     }
-
-    // Resolve only when both players have played
+    // Resolve round only when both have played
     if (roundData[playerId] && roundData[opponentId]) {
-      opponentStatusEl.innerText = "Both cards dropped!";
       resolveRound(roundData[playerId].card, roundData[opponentId].card);
     }
   });
@@ -193,6 +185,7 @@ function listenForOpponentCard() {
 
 // ===== RESOLVE ROUND =====
 function resolveRound(playerCard, opponentCard) {
+  clearInterval(timerInterval);
   let resultText = "";
 
   if (playerCard.power > opponentCard.power) {
@@ -211,7 +204,7 @@ function resolveRound(playerCard, opponentCard) {
     resultText = "😐 DRAW!";
   }
 
-  // SHOW CARDS FACE TO FACE
+  // Face-off UI
   faceoffContainer.innerHTML = "";
   const playerCardEl = document.createElement("div");
   playerCardEl.className = "card faceoff";
@@ -232,10 +225,13 @@ function resolveRound(playerCard, opponentCard) {
   cleanupRound(round - 1);
 
   if (round > 5) endGame();
-  else startTimer();
+  else {
+    startTimer();
+    listenForOpponentCard(); // re-listen for next round
+  }
 }
 
-// ===== CLEANUP ROUND DATA =====
+// ===== CLEANUP =====
 function cleanupRound(roundNumber) {
   database.ref(`matches/round${roundNumber}`).remove();
 }
@@ -251,7 +247,7 @@ function endGame() {
   restartBtn.classList.remove("hidden");
 }
 
-// ===== RESTART GAME =====
+// ===== RESTART =====
 restartBtn.onclick = () => {
   restartBtn.classList.add("hidden");
   resultBox.innerText = "";
